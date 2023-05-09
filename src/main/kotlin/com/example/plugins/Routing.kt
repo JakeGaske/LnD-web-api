@@ -10,7 +10,7 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
 @Serializable
-data class User(val id: String, var balance: Balance, var isNew: Boolean = true){
+data class User(val id: String, var balance: Balance, var isSetup: Boolean = true){
     fun creditWallet(coins: Int, transactionId: String, version: Int) {
         balance.coins += coins
         balance.transactionId = transactionId
@@ -21,7 +21,7 @@ data class User(val id: String, var balance: Balance, var isNew: Boolean = true)
         balance.coins = 1000;
         balance.transactionId = "tx123"
         balance.version = 1;
-        isNew = false;
+        isSetup = false;
     }
 }
 @Serializable
@@ -42,7 +42,7 @@ fun Application.configureRouting() {
                 call.respond(HttpStatusCode.BadRequest, "Invalid ID")
             } else {
                 val user : User = users.find { it.id == id }!!
-                if(user.isNew){
+                if(user.isSetup){
                     user.setupUserWallet()
                     call.respond(HttpStatusCode.Created)
                 } else {
