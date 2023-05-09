@@ -4,12 +4,9 @@ import io.ktor.server.application.*
 import io.ktor.http.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.serialization.Serializable
 
-@Serializable
 data class User(val id: String, val balance: Balance)
 
-@Serializable
 data class Balance(val transactionId: String, val version: Int, val coins: Int)
 
 val users = mutableListOf<User>()
