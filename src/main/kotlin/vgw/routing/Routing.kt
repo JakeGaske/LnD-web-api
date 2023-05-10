@@ -7,8 +7,8 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import vgw.user.*
-import vgw.wallet.payloads.*
+import vgw.wallet.*
+import vgw.wallet.payloads.CreditPayload
 
 fun Application.configureRouting() {
     routing {
@@ -20,7 +20,10 @@ fun Application.configureRouting() {
                 val user : User = users.find { it.id == id }!!
                 val jsonPayload = call.receive<String>()
                 val payload = Json.decodeFromString<CreditPayload>(jsonPayload)
-                call.respond(user.creditWallet(payload.coins, payload.transactionId), user.balance)
+
+                val result = user.creditWallet(payload.coins, payload.transactionId)
+                val httpStatus = ConvertWalletResponseToHTTPStatus(result)
+                call.respond(httpStatus, user.balance)
             }
         }
 
@@ -33,11 +36,9 @@ fun Application.configureRouting() {
                 val jsonPayload = call.receive<String>()
                 val payload = Json.decodeFromString<CreditPayload>(jsonPayload)
 
-                if(user.balance.coins < payload.coins){
-                    call.respond(HttpStatusCode.BadRequest, "Coins is smaller than payload")
-                } else {
-                    call.respond(user.debitWallet(payload.coins, payload.transactionId, 1 ), user.balance)
-                }
+                val result = user.debitWallet(payload.coins, payload.transactionId)
+                val httpStatus = ConvertWalletResponseToHTTPStatus(result)
+                call.respond(httpStatus, user.balance)
             }
         }
 
@@ -46,12 +47,11 @@ fun Application.configureRouting() {
             if (id == null) {
                 call.respond(HttpStatusCode.BadRequest, "Invalid ID")
             } else {
-                val user = users.find { it.id == id }
-                if (user == null) {
-                    createNewUser(id)
-                    call.respond(HttpStatusCode.NotFound, "New user created")
-                } else {
-                    call.respond(HttpStatusCode.OK, user.balance)
+                val bal = getUserBalance(id)
+                if (bal.transactionId == "NA") {
+                    call.respond(HttpStatusCode.NotFound)
+                } else if (bal.transactionId != "NA"){
+                    call.respond(HttpStatusCode.OK, bal)
                 }
             }
         }
