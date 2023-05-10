@@ -11,16 +11,16 @@ import kotlinx.serialization.json.Json
 
 @Serializable
 data class User(val id: String, var balance: Balance, var transactions: MutableList<Transaction>){
-    fun creditWallet(coins: Int, transactionId: String, version: Int) : HttpStatusCode {
-        balance.coins += coins
-        balance.transactionId = transactionId
-        balance.version = version
-
-        var anyBefore: Boolean = !transactions.any { it.transactionType == TransactionType.Credit }
-        var newTransaction = Transaction(TransactionType.Credit, coins, transactionId, version)
-        transactions.add(newTransaction)
-
+    fun creditWallet(coins: Int, transactionId: String) : HttpStatusCode {
+        val anyBefore: Boolean = !transactions.any { it.transactionId == transactionId }
         if(anyBefore){
+            balance.coins += coins
+            balance.transactionId = transactionId
+            balance.version += 1
+
+            val newTransaction = Transaction(TransactionType.Credit, coins, transactionId, balance.version)
+            transactions.add(newTransaction)
+
             return HttpStatusCode.Created
         } else {
             return HttpStatusCode.Accepted
@@ -28,25 +28,20 @@ data class User(val id: String, var balance: Balance, var transactions: MutableL
     }
 
     fun debitWallet(coins: Int, transactionId: String, version: Int) : HttpStatusCode {
-        balance.coins -= coins
-        balance.transactionId = transactionId
-        balance.version = version
-
-        var anyBefore: Boolean = !transactions.any { it.transactionType == TransactionType.Debit }
-        var newTransaction = Transaction(TransactionType.Debit, coins, transactionId, version)
-        transactions.add(newTransaction)
+        val anyBefore: Boolean = !transactions.any { it.transactionType == TransactionType.Debit }
 
         if(anyBefore){
+            balance.coins -= coins
+            balance.transactionId = transactionId
+            balance.version += version
+
+            val newTransaction = Transaction(TransactionType.Debit, coins, transactionId, balance.version)
+            transactions.add(newTransaction)
+
             return HttpStatusCode.Created
         } else {
             return HttpStatusCode.Accepted
         }
-    }
-
-    fun setupUserWallet() {
-        balance.coins = 1000;
-        balance.transactionId = "tx123"
-        balance.version = 1;
     }
 }
 
@@ -64,10 +59,6 @@ var userCount = users.size
 
 fun Application.configureRouting() {
     routing {
-        get("/") {
-            call.respondText("Hello World!")
-        }
-
         post("/wallets/{id}/credit") {
             val id = call.parameters["id"]
             if (id == null) {
@@ -76,7 +67,7 @@ fun Application.configureRouting() {
                 val user : User = users.find { it.id == id }!!
                 val jsonPayload = call.receive<String>()
                 val payload = Json.decodeFromString<CreditPayload>(jsonPayload)
-                call.respond(user.creditWallet(payload.coins, payload.transactionId, 1 ), user.balance)
+                call.respond(user.creditWallet(payload.coins, payload.transactionId), user.balance)
             }
         }
 
@@ -134,8 +125,6 @@ fun Application.configureRouting() {
 }
 
 fun createNewUser(id: String): Balance {
-    // Here you can implement your logic to create a new user with a balance
-    // For the sake of simplicity, let's just create a new user with a hardcoded balance for now
     val balance = Balance("NA", 0, 0)
     val newUser = User(id, balance, mutableListOf())
     users.add(newUser)
