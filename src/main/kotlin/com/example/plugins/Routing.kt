@@ -10,20 +10,52 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
 @Serializable
-data class User(val id: String, var balance: Balance, var isSetup: Boolean = true){
-    fun creditWallet(coins: Int, transactionId: String, version: Int) {
+data class User(val id: String, var balance: Balance, var transactions: MutableList<Transaction>){
+    fun creditWallet(coins: Int, transactionId: String, version: Int) : HttpStatusCode {
         balance.coins += coins
         balance.transactionId = transactionId
         balance.version = version
+
+        var anyBefore: Boolean = !transactions.any { it.transactionType == TransactionType.Credit }
+        var newTransaction = Transaction(TransactionType.Credit, coins, transactionId, version)
+        transactions.add(newTransaction)
+
+        if(anyBefore){
+            return HttpStatusCode.Created
+        } else {
+            return HttpStatusCode.Accepted
+        }
+    }
+
+    fun debitWallet(coins: Int, transactionId: String, version: Int) : HttpStatusCode {
+        balance.coins -= coins
+        balance.transactionId = transactionId
+        balance.version = version
+
+        var anyBefore: Boolean = !transactions.any { it.transactionType == TransactionType.Debit }
+        var newTransaction = Transaction(TransactionType.Debit, coins, transactionId, version)
+        transactions.add(newTransaction)
+
+        if(anyBefore){
+            return HttpStatusCode.Created
+        } else {
+            return HttpStatusCode.Accepted
+        }
     }
 
     fun setupUserWallet() {
         balance.coins = 1000;
         balance.transactionId = "tx123"
         balance.version = 1;
-        isSetup = false;
     }
 }
+
+enum class TransactionType{
+    Credit,
+    Debit
+}
+@Serializable
+data class Transaction(val transactionType: TransactionType, val coins: Int, val transactionId: String, val transactionVersion: Int)
 @Serializable
 data class Balance(var transactionId: String, var version: Int, var coins: Int)
 
@@ -42,12 +74,25 @@ fun Application.configureRouting() {
                 call.respond(HttpStatusCode.BadRequest, "Invalid ID")
             } else {
                 val user : User = users.find { it.id == id }!!
-                if(user.isSetup){
-                    user.setupUserWallet()
-                    call.respond(HttpStatusCode.Created)
+                val jsonPayload = call.receive<String>()
+                val payload = Json.decodeFromString<CreditPayload>(jsonPayload)
+                call.respond(user.creditWallet(payload.coins, payload.transactionId, 1 ), user.balance)
+            }
+        }
+
+        post("/wallets/{id}/debit") {
+            val id = call.parameters["id"]
+            if (id == null) {
+                call.respond(HttpStatusCode.BadRequest, "Invalid ID")
+            } else {
+                val user : User = users.find { it.id == id }!!
+                val jsonPayload = call.receive<String>()
+                val payload = Json.decodeFromString<CreditPayload>(jsonPayload)
+
+                if(user.balance.coins < payload.coins){
+                    call.respond(HttpStatusCode.BadRequest, "Coins is smaller than payload")
                 } else {
-                    // RETURN JSON OF USER BALANCE
-                    call.respond(HttpStatusCode.Accepted, user.balance)
+                    call.respond(user.debitWallet(payload.coins, payload.transactionId, 1 ), user.balance)
                 }
             }
         }
@@ -67,6 +112,20 @@ fun Application.configureRouting() {
             }
         }
 
+        get("/Users/{id}") {
+            val id = call.parameters["id"]
+            if (id == null) {
+                call.respond(HttpStatusCode.BadRequest, "Invalid ID")
+            } else {
+                val user = users.find { it.id == id }
+                if (user == null) {
+                    call.respond(HttpStatusCode.NotFound)
+                } else {
+                    call.respond(HttpStatusCode.OK, user.balance)
+                }
+            }
+        }
+
         get("/users/count") {
             userCount = users.size
             call.respondText(userCount.toString())
@@ -78,24 +137,13 @@ fun createNewUser(id: String): Balance {
     // Here you can implement your logic to create a new user with a balance
     // For the sake of simplicity, let's just create a new user with a hardcoded balance for now
     val balance = Balance("NA", 0, 0)
-    val newUser = User(id, balance)
+    val newUser = User(id, balance, mutableListOf())
     users.add(newUser)
     return balance
 }
 
+@Serializable
 data class CreditPayload(
     val transactionId: String,
-    val version: Int,
     val coins: Int
 )
-
-
-fun creditUserWallet(jsonPayload: String, userId: String) {
-    val payload = Json.decodeFromString<CreditPayload>(jsonPayload)
-
-    // find the user with the specified ID or create a new user if none exists
-    val user: User = (users.find { it.id == userId } ?: createNewUser(userId)) as User
-
-    // credit the user's wallet with the specified coins
-    user.creditWallet(payload.coins, payload.transactionId, payload.version)
-}
