@@ -1,6 +1,5 @@
 package vgw.wallet
 
-import io.ktor.http.*
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -26,7 +25,7 @@ val users = mutableListOf<User>()
 data class User(val id: String, var balance: Balance, var transactions: MutableList<Transaction>) {
     fun creditWallet(coins: Int, transactionId: String): WalletResponse {
         val anyBefore: Boolean = !transactions.any { it.transactionId == transactionId }
-        if (anyBefore) {
+        return if (anyBefore) {
             balance.coins += coins
             balance.transactionId = transactionId
             balance.version += 1
@@ -34,9 +33,9 @@ data class User(val id: String, var balance: Balance, var transactions: MutableL
             val newTransaction = Transaction(TransactionType.Credit, coins, transactionId, balance.version)
             transactions.add(newTransaction)
 
-            return WalletResponse.Created
+            WalletResponse.Created
         } else {
-            return WalletResponse.DuplicateTransaction
+            WalletResponse.DuplicateTransaction
         }
     }
 
@@ -46,7 +45,7 @@ data class User(val id: String, var balance: Balance, var transactions: MutableL
         }
         val anyBefore: Boolean = !transactions.any { it.transactionType == TransactionType.Debit }
 
-        if (anyBefore) {
+        return if (anyBefore) {
             balance.coins -= coins
             balance.transactionId = transactionId
             balance.version += 1
@@ -54,9 +53,9 @@ data class User(val id: String, var balance: Balance, var transactions: MutableL
             val newTransaction = Transaction(TransactionType.Debit, coins, transactionId, balance.version)
             transactions.add(newTransaction)
 
-            return WalletResponse.Created
+            WalletResponse.Created
         } else {
-            return WalletResponse.DuplicateTransaction
+            WalletResponse.DuplicateTransaction
         }
     }
 }
@@ -70,9 +69,5 @@ fun createNewUser(id: String): Balance {
 
 fun getUserBalance(id: String): Balance {
     val user = users.find { it.id == id }
-    if (user == null) {
-        return createNewUser(id)
-    } else {
-        return user.balance
-    }
+    return user?.balance ?: createNewUser(id)
 }
