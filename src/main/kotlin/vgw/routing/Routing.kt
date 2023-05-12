@@ -55,19 +55,5 @@ fun Application.configureRouting() {
                 }
             }
         }
-
-        get("/Users/{id}") {
-            val id = call.parameters["id"]
-            if (id == null) {
-                call.respond(HttpStatusCode.BadRequest, "Invalid ID")
-            } else {
-                val user = users.find { it.id == id }
-                if (user == null) {
-                    call.respond(HttpStatusCode.NotFound)
-                } else {
-                    call.respond(HttpStatusCode.OK, user.balance)
-                }
-            }
-        }
     }
 }
