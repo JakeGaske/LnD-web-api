@@ -4,6 +4,7 @@ import kotlin.test.*
 import vgw.wallet.*
 
 class ApplicationTest {
+    // Wont have users soon so can remove once that is done
     @Test
     fun TestCreateUser() {
         users.clear()
@@ -12,14 +13,14 @@ class ApplicationTest {
     }
 
     @Test
-    fun TestGetUserBalance() {
+    fun TestWillGetUserBalance() {
         users.clear()
         val bal = getUserBalance("testingUser")
         assertNotNull(bal)
     }
 
     @Test
-    fun TestCreditAccount() {
+    fun TestWillCreditWalletSuccessfully() {
         users.clear()
         createNewUser("test")
         assertNotNull(users[0])
@@ -27,7 +28,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun TestCheckCreditResponseWithDuplicates() {
+    fun TestWillCreditWithDuplicatesGetWalletResponseForBoth() {
         users.clear()
         createNewUser("test")
         assertEquals(WalletResponse.Created, users[0].creditWallet(100, "test01"))
@@ -35,7 +36,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun CheckDebitResponse() {
+    fun TestWillCheckDebitWalletSuccessfully() {
         users.clear()
         createNewUser("test")
         val user = users[0]
@@ -44,7 +45,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun DebitMoreThanBalanceHas() {
+    fun TestWillDebitMoreThanBalanceHasAndReturnError() {
         users.clear()
         createNewUser("test")
         val user = users[0]
@@ -53,7 +54,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun CheckDebitResponseWithDuplicates() {
+    fun TestWillDebitWithDuplicatesGetWalletResponseForBoth() {
         users.clear()
         createNewUser("test")
         val user = users[0]
