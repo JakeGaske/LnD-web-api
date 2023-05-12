@@ -8,8 +8,8 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization") version "1.8.21"
 }
 
-group = "com.example"
-version = "0.0.1"
+group = "vgw.example"
+version = "1.0.0"
 application {
     mainClass.set("vgw.ApplicationKt")
 

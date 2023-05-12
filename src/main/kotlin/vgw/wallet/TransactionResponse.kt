@@ -2,7 +2,7 @@ package vgw.wallet
 
 import io.ktor.http.*
 
-enum class WalletResponse(){
+enum class WalletResponse() {
     DuplicateTransaction,
     Created,
     InputError,
@@ -10,8 +10,8 @@ enum class WalletResponse(){
     NotFound,
 }
 
-fun ConvertWalletResponseToHTTPStatus(response: WalletResponse) : HttpStatusCode{
-    return when(response){
+fun ConvertWalletResponseToHTTPStatus(response: WalletResponse): HttpStatusCode {
+    return when (response) {
         WalletResponse.Created -> HttpStatusCode.Created
         WalletResponse.InputError -> HttpStatusCode.BadRequest
         WalletResponse.DuplicateTransaction -> HttpStatusCode.Accepted

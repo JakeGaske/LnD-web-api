@@ -17,7 +17,7 @@ fun Application.configureRouting() {
             if (id == null) {
                 call.respond(HttpStatusCode.BadRequest, "Invalid ID")
             } else {
-                val user : User = users.find { it.id == id }!!
+                val user: User = users.find { it.id == id }!!
                 val jsonPayload = call.receive<String>()
                 val payload = Json.decodeFromString<CreditPayload>(jsonPayload)
 
@@ -32,7 +32,7 @@ fun Application.configureRouting() {
             if (id == null) {
                 call.respond(HttpStatusCode.BadRequest, "Invalid ID")
             } else {
-                val user : User = users.find { it.id == id }!!
+                val user: User = users.find { it.id == id }!!
                 val jsonPayload = call.receive<String>()
                 val payload = Json.decodeFromString<CreditPayload>(jsonPayload)
 
@@ -50,7 +50,7 @@ fun Application.configureRouting() {
                 val bal = getUserBalance(id)
                 if (bal.transactionId == "NA") {
                     call.respond(HttpStatusCode.NotFound)
-                } else if (bal.transactionId != "NA"){
+                } else if (bal.transactionId != "NA") {
                     call.respond(HttpStatusCode.OK, bal)
                 }
             }

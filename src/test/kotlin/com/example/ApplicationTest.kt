@@ -5,21 +5,21 @@ import vgw.wallet.*
 
 class ApplicationTest {
     @Test
-    fun TestCreateUser(){
+    fun TestCreateUser() {
         users.clear()
         createNewUser("test")
         assertEquals(users[0].id, "test")
     }
 
     @Test
-    fun GetUserBalance(){
+    fun GetUserBalance() {
         users.clear()
         val bal = getUserBalance("testingUser")
         assertNotNull(bal)
     }
 
     @Test
-    fun CreditAccount(){
+    fun CreditAccount() {
         users.clear()
         createNewUser("test")
         assertNotNull(users[0])
@@ -27,7 +27,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun CheckCreditResponseWithDuplicates(){
+    fun CheckCreditResponseWithDuplicates() {
         users.clear()
         createNewUser("test")
         assertEquals(users[0].creditWallet(100, "test01"), WalletResponse.Created)
@@ -35,7 +35,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun CheckDebitResponse(){
+    fun CheckDebitResponse() {
         users.clear()
         createNewUser("test")
         val user = users[0]
@@ -44,7 +44,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun DebitMoreThanBalanceHas(){
+    fun DebitMoreThanBalanceHas() {
         users.clear()
         createNewUser("test")
         val user = users[0]
@@ -53,7 +53,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun CheckDebitResponseWithDuplicates(){
+    fun CheckDebitResponseWithDuplicates() {
         users.clear()
         createNewUser("test")
         val user = users[0]
