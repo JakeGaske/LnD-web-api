@@ -8,30 +8,30 @@ class ApplicationTest {
     fun TestCreateUser() {
         users.clear()
         createNewUser("test")
-        assertEquals(users[0].id, "test")
+        assertEquals("test", users[0].id)
     }
 
     @Test
-    fun GetUserBalance() {
+    fun TestGetUserBalance() {
         users.clear()
         val bal = getUserBalance("testingUser")
         assertNotNull(bal)
     }
 
     @Test
-    fun CreditAccount() {
+    fun TestCreditAccount() {
         users.clear()
         createNewUser("test")
         assertNotNull(users[0])
-        assertEquals(users[0].creditWallet(100, "test01"), WalletResponse.Created)
+        assertEquals(WalletResponse.Created, users[0].creditWallet(100, "test01"))
     }
 
     @Test
-    fun CheckCreditResponseWithDuplicates() {
+    fun TestCheckCreditResponseWithDuplicates() {
         users.clear()
         createNewUser("test")
-        assertEquals(users[0].creditWallet(100, "test01"), WalletResponse.Created)
-        assertEquals(users[0].creditWallet(100, "test01"), WalletResponse.DuplicateTransaction)
+        assertEquals(WalletResponse.Created, users[0].creditWallet(100, "test01"))
+        assertEquals(WalletResponse.DuplicateTransaction, users[0].creditWallet(100, "test01"))
     }
 
     @Test
@@ -40,7 +40,7 @@ class ApplicationTest {
         createNewUser("test")
         val user = users[0]
         user.creditWallet(100, "test01")
-        assertEquals(user.debitWallet(100, "test01"), WalletResponse.Created)
+        assertEquals(WalletResponse.Created, user.debitWallet(100, "test01"))
     }
 
     @Test
@@ -49,7 +49,7 @@ class ApplicationTest {
         createNewUser("test")
         val user = users[0]
         user.creditWallet(100, "test01")
-        assertEquals(user.debitWallet(101, "test01"), WalletResponse.InputError)
+        assertEquals(WalletResponse.InputError, user.debitWallet(101, "test01"))
     }
 
     @Test
@@ -58,8 +58,8 @@ class ApplicationTest {
         createNewUser("test")
         val user = users[0]
         user.creditWallet(100, "test01")
-        assertEquals(user.debitWallet(100, "test01"), WalletResponse.Created)
+        assertEquals(WalletResponse.Created, user.debitWallet(100, "test01"))
         user.creditWallet(100, "test02")
-        assertEquals(user.debitWallet(100, "test01"), WalletResponse.DuplicateTransaction)
+        assertEquals(WalletResponse.DuplicateTransaction, user.debitWallet(100, "test01"))
     }
 }
