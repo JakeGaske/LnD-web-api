@@ -10,6 +10,9 @@ enum class WalletResponse() {
     NotFound,
 }
 
+
+data class BalanceWalletResponse(var response: WalletResponse, var balance: Balance)
+
 fun ConvertWalletResponseToHTTPStatus(response: WalletResponse): HttpStatusCode {
     return when (response) {
         WalletResponse.Created -> HttpStatusCode.Created

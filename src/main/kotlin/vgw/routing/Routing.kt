@@ -17,13 +17,18 @@ fun Application.configureRouting() {
             if (id == null) {
                 call.respond(HttpStatusCode.BadRequest, "Invalid ID")
             } else {
-                val user: User = users.find { it.id == id }!!
-                val jsonPayload = call.receive<String>()
-                val payload = Json.decodeFromString<CreditPayload>(jsonPayload)
+                val jsonPayload = call.receive<CreditPayload>()
+                val result = creditWallet(id, jsonPayload.coins, jsonPayload.transactionId)
 
-                val result = user.creditWallet(payload.coins, payload.transactionId)
-                val httpStatus = ConvertWalletResponseToHTTPStatus(result)
-                call.respond(httpStatus, user.balance)
+                when (result.response) {
+                    WalletResponse.NotFound -> call.respond(HttpStatusCode.NotFound)
+                    WalletResponse.DuplicateTransaction -> call.respond(HttpStatusCode.Accepted, result.balance)
+                    WalletResponse.Created -> call.respond(HttpStatusCode.Created, result.balance)
+                    WalletResponse.InputError -> call.respond(HttpStatusCode.BadRequest, result.balance)
+                    else -> {
+                        call.respond(HttpStatusCode.NotFound)
+                    }
+                }
             }
         }
 
