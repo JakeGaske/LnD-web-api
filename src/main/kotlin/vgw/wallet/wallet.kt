@@ -19,22 +19,22 @@ enum class TransactionType {
 }
 
 // Off load this to a database when task up to task
-val users = mutableListOf<User>()
+val wallets = mutableListOf<Wallet>()
 
 @Serializable
-data class User(val id: String, var balance: Balance, var transactions: MutableList<Transaction>)
+data class Wallet(val id: String, var balance: Balance, var transactions: MutableList<Transaction>)
 
 fun creditWallet(walletID: String, coins: Int, transactionId: String): BalanceWalletResponse {
     val status = BalanceWalletResponse(WalletResponse.NotFound, Balance("NA", 0, 0))
-    val wallet = getUser(walletID)
+    val wallet = getWallet(walletID)
 
     if (wallet == null) {
         // Create the wallet and credit it here
-        val newUser = User(walletID, Balance(transactionId, 1, coins), mutableListOf())
+        val newWallet = Wallet(walletID, Balance(transactionId, 1, coins), mutableListOf())
 
-        addNewTransaction(newUser, TransactionType.Credit, coins, transactionId, newUser.balance.version)
+        addNewTransaction(newWallet, TransactionType.Credit, coins, transactionId, newWallet.balance.version)
 
-        users.add(newUser)
+        wallets.add(newWallet)
         status.response = WalletResponse.Created
     } else {
         // When a wallet already exists do this
@@ -58,7 +58,7 @@ fun creditWallet(walletID: String, coins: Int, transactionId: String): BalanceWa
 }
 
 fun debitWallet(walletID: String, coins: Int, transactionId: String): BalanceWalletResponse {
-    val wallet = getUser(walletID)
+    val wallet = getWallet(walletID)
     val status = BalanceWalletResponse(WalletResponse.NotFound, Balance("NA", 0, 0))
 
     if (wallet == null) {
@@ -86,13 +86,13 @@ fun debitWallet(walletID: String, coins: Int, transactionId: String): BalanceWal
     return status
 }
 
-fun getUserBalance(id: String): BalanceWalletResponse {
+fun getWalletBalance(id: String): BalanceWalletResponse {
     val status = BalanceWalletResponse(WalletResponse.NotFound, Balance("NA", 0, 0))
-    val user = getUser(id)
+    val wallet = getWallet(id)
 
     when (doesWalletExist(id)) {
         WalletResponse.Ok -> {
-            status.balance = user!!.balance
+            status.balance = wallet!!.balance
             status.response = WalletResponse.Ok
         }
 
@@ -102,18 +102,24 @@ fun getUserBalance(id: String): BalanceWalletResponse {
     return status
 }
 
-fun addNewTransaction(wallet: User, transactionType: TransactionType, coins: Int, transactionId: String, version: Int) {
+fun addNewTransaction(
+    wallet: Wallet,
+    transactionType: TransactionType,
+    coins: Int,
+    transactionId: String,
+    version: Int,
+) {
     val newTransaction = Transaction(transactionType, coins, transactionId, version)
     wallet.transactions.add(newTransaction)
 }
 
-fun getUser(id: String): User? {
-    return users.find { it.id == id }
+fun getWallet(id: String): Wallet? {
+    return wallets.find { it.id == id }
 }
 
 fun doesWalletExist(id: String): WalletResponse {
-    val user: User? = users.find { it.id == id }
-    return if (user == null) {
+    val wallet: Wallet? = wallets.find { it.id == id }
+    return if (wallet == null) {
         WalletResponse.NotFound
     } else {
         WalletResponse.Ok

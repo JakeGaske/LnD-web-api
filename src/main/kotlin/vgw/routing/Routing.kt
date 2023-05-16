@@ -55,7 +55,7 @@ fun Application.configureRouting() {
             if (id == null) {
                 call.respond(HttpStatusCode.BadRequest, "Invalid ID")
             } else {
-                val result = getUserBalance(id)
+                val result = getWalletBalance(id)
 
                 when (result.response) {
                     WalletResponse.NotFound -> call.respond(HttpStatusCode.NotFound)
