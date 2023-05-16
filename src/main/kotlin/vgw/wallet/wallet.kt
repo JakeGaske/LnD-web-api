@@ -22,47 +22,22 @@ enum class TransactionType {
 val users = mutableListOf<User>()
 
 @Serializable
-data class User(val id: String, var balance: Balance, var transactions: MutableList<Transaction>) {
-
-    fun debitWallet(coins: Int, transactionId: String): WalletResponse {
-        if (balance.coins < coins) {
-            return WalletResponse.InputError
-        }
-        val anyBefore: Boolean = !transactions.any { it.transactionType == TransactionType.Debit }
-
-        return if (anyBefore) {
-            balance.coins -= coins
-            balance.transactionId = transactionId
-            balance.version += 1
-
-            val newTransaction = Transaction(TransactionType.Debit, coins, transactionId, balance.version)
-            transactions.add(newTransaction)
-
-            WalletResponse.Created
-        } else {
-            WalletResponse.DuplicateTransaction
-        }
-    }
-
-    fun doesWalletExist(): WalletResponse {
-        val user: User? = users.find { it.id == id }
-        return if (user == null) {
-            WalletResponse.NotFound
-        } else {
-            WalletResponse.Ok
-        }
-    }
-}
+data class User(val id: String, var balance: Balance, var transactions: MutableList<Transaction>)
 
 fun creditWallet(walletID: String, coins: Int, transactionId: String): BalanceWalletResponse {
     val status = BalanceWalletResponse(WalletResponse.NotFound, Balance("NA", 0, 0))
-
-    val wallet: User? = users.find { it.id == walletID }
+    val wallet = getUser(walletID)
 
     if (wallet == null) {
-        status.response = WalletResponse.NotFound
-        status.balance = Balance("NA", 0, 0)
+        // Create the wallet and credit it here
+        val newUser = User(walletID, Balance(transactionId, 1, coins), mutableListOf())
+
+        addNewTransaction(newUser, TransactionType.Credit, coins, transactionId, newUser.balance.version)
+
+        users.add(newUser)
+        status.response = WalletResponse.Created
     } else {
+        // When a wallet already exists do this
         val isDuplicateId: Boolean = wallet.transactions.any { it.transactionId == transactionId }
 
         if (isDuplicateId) {
@@ -73,8 +48,7 @@ fun creditWallet(walletID: String, coins: Int, transactionId: String): BalanceWa
             wallet.balance.transactionId = transactionId
             wallet.balance.version += 1
 
-            val newTransaction = Transaction(TransactionType.Credit, coins, transactionId, wallet.balance.version)
-            wallet.transactions.add(newTransaction)
+            addNewTransaction(wallet, TransactionType.Credit, coins, transactionId, wallet.balance.version)
 
             status.response = WalletResponse.Created
         }
@@ -83,15 +57,65 @@ fun creditWallet(walletID: String, coins: Int, transactionId: String): BalanceWa
     return status
 }
 
+fun debitWallet(walletID: String, coins: Int, transactionId: String): BalanceWalletResponse {
+    val wallet = getUser(walletID)
+    val status = BalanceWalletResponse(WalletResponse.NotFound, Balance("NA", 0, 0))
 
-fun createNewUser(id: String): Balance {
-    val balance = Balance("NA", 0, 0)
-    val newUser = User(id, balance, mutableListOf())
-    users.add(newUser)
-    return balance
+    if (wallet == null) {
+        status.response = WalletResponse.NotFound
+    } else {
+        if (wallet.balance.coins < coins) {
+            status.response = WalletResponse.InputError
+        } else {
+            val isDuplicateId: Boolean = wallet.transactions.any { it.transactionId == transactionId }
+            if (isDuplicateId) {
+                status.response = WalletResponse.DuplicateTransaction
+                status.balance = wallet.balance
+            } else {
+                wallet.balance.coins -= coins
+                wallet.balance.transactionId = transactionId
+                wallet.balance.version += 1
+
+                addNewTransaction(wallet, TransactionType.Debit, coins, transactionId, wallet.balance.version)
+
+                status.response = WalletResponse.Created
+            }
+        }
+    }
+
+    return status
 }
 
-fun getUserBalance(id: String): Balance {
-    val user = users.find { it.id == id }
-    return user?.balance ?: createNewUser(id)
+fun getUserBalance(id: String): BalanceWalletResponse {
+    val status = BalanceWalletResponse(WalletResponse.NotFound, Balance("NA", 0, 0))
+    val user = getUser(id)
+
+    when (doesWalletExist(id)) {
+        WalletResponse.Ok -> {
+            status.balance = user!!.balance
+            status.response = WalletResponse.Ok
+        }
+
+        else -> {}
+    }
+
+    return status
+}
+
+fun addNewTransaction(wallet: User, transactionType: TransactionType, coins: Int, transactionId: String, version: Int) {
+    val newTransaction = Transaction(transactionType, coins, transactionId, version)
+    wallet.transactions.add(newTransaction)
+}
+
+fun getUser(id: String): User? {
+    return users.find { it.id == id }
+}
+
+fun doesWalletExist(id: String): WalletResponse {
+    val user: User? = users.find { it.id == id }
+    return if (user == null) {
+        WalletResponse.NotFound
+    } else {
+        WalletResponse.Ok
+    }
 }
