@@ -35,10 +35,12 @@ fun creditWallet(walletID: String, coins: Int, transactionId: String): BalanceWa
         addNewTransaction(newWallet, TransactionType.Credit, coins, transactionId, newWallet.balance.version)
 
         wallets.add(newWallet)
+        status.balance = newWallet.balance
         status.response = WalletResponse.Created
     } else {
         // When a wallet already exists do this
-        val isDuplicateId: Boolean = wallet.transactions.any { it.transactionId == transactionId }
+        val isDuplicateId: Boolean =
+            wallet.transactions.any { it.transactionId == transactionId && it.transactionType == TransactionType.Credit }
 
         if (isDuplicateId) {
             status.response = WalletResponse.DuplicateTransaction
@@ -67,7 +69,8 @@ fun debitWallet(walletID: String, coins: Int, transactionId: String): BalanceWal
         if (wallet.balance.coins < coins) {
             status.response = WalletResponse.InputError
         } else {
-            val isDuplicateId: Boolean = wallet.transactions.any { it.transactionId == transactionId }
+            val isDuplicateId: Boolean =
+                wallet.transactions.any { it.transactionId == transactionId && it.transactionType == TransactionType.Debit }
             if (isDuplicateId) {
                 status.response = WalletResponse.DuplicateTransaction
                 status.balance = wallet.balance
