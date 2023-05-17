@@ -9,7 +9,7 @@ class ApplicationTest {
     fun testWillNotFindUnknownWallet() {
         val walletID = "testWillNotFindUnknownWallet"
 
-        val result = getWallet(walletID);
+        val result = getWallet(walletID)
         assertNull(result)
     }
 
@@ -23,7 +23,7 @@ class ApplicationTest {
         assertEquals(100, result.balance.coins)
         assertEquals("testID", result.balance.transactionId)
 
-        val resultWallet = getWallet(walletID);
+        val resultWallet = getWallet(walletID)
         assertNotNull(resultWallet)
     }
 
@@ -34,7 +34,7 @@ class ApplicationTest {
         creditWallet(walletID, 1, "testID1")
         creditWallet(walletID, 2, "testID2")
 
-        val result = getWallet(walletID);
+        val result = getWallet(walletID)
         assertNotNull(result)
 
         assertEquals(3, result.balance.coins)
@@ -52,7 +52,7 @@ class ApplicationTest {
         creditWallet(walletID, 654, "testID654")
         creditWallet(walletID, 200, "test200")
 
-        val result = getWallet(walletID);
+        val result = getWallet(walletID)
         assertNotNull(result)
 
         assertEquals(1745, result.balance.coins)
@@ -79,7 +79,7 @@ class ApplicationTest {
         creditWallet(walletID, 1000, "testID123")
         debitWallet(walletID, 100, "testID123")
 
-        val result = getWallet(walletID);
+        val result = getWallet(walletID)
         assertNotNull(result)
 
         assertEquals(900, result.balance.coins)
@@ -96,7 +96,7 @@ class ApplicationTest {
         debitWallet(walletID, 100, "testID4")
         debitWallet(walletID, 100, "testID5")
 
-        val result = getWallet(walletID);
+        val result = getWallet(walletID)
         assertNotNull(result)
 
         assertEquals(600, result.balance.coins)
@@ -113,7 +113,7 @@ class ApplicationTest {
         val responseResult = debitWallet(walletID, 100, "testID2")
         assertEquals(WalletResponse.DuplicateTransaction, responseResult.response)
 
-        val result = getWallet(walletID);
+        val result = getWallet(walletID)
         assertNotNull(result)
 
         assertEquals(900, result.balance.coins)
@@ -129,7 +129,7 @@ class ApplicationTest {
         val responseResult = debitWallet(walletID, 1001, "testID2")
         assertEquals(WalletResponse.InputError, responseResult.response)
 
-        val result = getWallet(walletID);
+        val result = getWallet(walletID)
         assertNotNull(result)
 
         assertEquals(1000, result.balance.coins)
