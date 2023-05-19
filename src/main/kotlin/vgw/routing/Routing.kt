@@ -24,7 +24,7 @@ fun Application.configureRouting() {
                     WalletResponse.Created -> call.respond(HttpStatusCode.Created, result.balance)
                     WalletResponse.InputError -> call.respond(HttpStatusCode.BadRequest, result.balance)
                     else -> {
-                        call.respond(HttpStatusCode.NotFound)
+                        call.respond(HttpStatusCode.InternalServerError)
                     }
                 }
             }
@@ -44,7 +44,7 @@ fun Application.configureRouting() {
                     WalletResponse.Created -> call.respond(HttpStatusCode.Created, result.balance)
                     WalletResponse.InputError -> call.respond(HttpStatusCode.BadRequest, result.balance)
                     else -> {
-                        call.respond(HttpStatusCode.NotFound)
+                        call.respond(HttpStatusCode.InternalServerError)
                     }
                 }
             }
