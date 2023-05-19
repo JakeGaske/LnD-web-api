@@ -1,6 +1,6 @@
 package vgw.wallet
 
-enum class WalletResponse() {
+enum class WalletResponse {
     DuplicateTransaction,
     Created,
     InputError,
