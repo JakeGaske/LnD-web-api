@@ -15,12 +15,10 @@ fun creditWallet(walletId: String, coins: Int, transactionId: String): QueryResp
     val wallet = getWallet(walletId)
 
     if (wallet == null) {
-        // Create the wallet and credit it here
         val newWallet = Wallet(walletId, Balance(transactionId, 1, coins))
         addNewTransaction(walletId, TransactionType.Credit, coins, transactionId, newWallet.balance.version)
         return QueryResponse.Success(newWallet)
     } else {
-        // When a wallet already exists do this
         val isDuplicateTransaction: Boolean =
             transactions.any { it.id == transactionId && it.type == TransactionType.Credit && it.walletId == walletId }
         return if (isDuplicateTransaction) {

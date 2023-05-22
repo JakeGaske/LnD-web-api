@@ -9,10 +9,10 @@ import vgw.wallet.doesWalletExist
 import java.util.UUID
 
 class ApplicationTest {
-
     @Test
     fun `test Will Not Find Unknown Wallet`() {
         val walletId = UUID.randomUUID().toString()
+
         when (val result = doesWalletExist(walletId)) {
             is QueryResponse.WalletNotFound -> {}
             else -> {
