@@ -10,6 +10,7 @@ import vgw.wallet.creditWallet
 import vgw.wallet.debitWallet
 import vgw.wallet.doesWalletExist
 import vgw.wallet.payloads.TransactionPayload
+import java.util.*
 
 fun Application.configureRouting() {
     routing {
@@ -18,7 +19,7 @@ fun Application.configureRouting() {
                 call.parameters["id"] ?: return@post call.respond(HttpStatusCode.BadRequest, "No Wallet Id provided")
             val jsonPayload = call.receive<TransactionPayload>()
 
-            when (val result = creditWallet(walletId, jsonPayload.coins, jsonPayload.transactionId)) {
+            when (val result = creditWallet(UUID.fromString(walletId), jsonPayload.coins, jsonPayload.transactionId)) {
                 is QueryResponse.Success -> call.respond(HttpStatusCode.Created, result.wallet.balance)
                 is QueryResponse.DuplicateTransaction -> call.respond(
                     HttpStatusCode.Accepted,
@@ -36,7 +37,7 @@ fun Application.configureRouting() {
                 call.parameters["id"] ?: return@post call.respond(HttpStatusCode.BadRequest, "No Wallet Id provided")
             val jsonPayload = call.receive<TransactionPayload>()
 
-            when (val result = debitWallet(walletId, jsonPayload.coins, jsonPayload.transactionId)) {
+            when (val result = debitWallet(UUID.fromString(walletId), jsonPayload.coins, jsonPayload.transactionId)) {
                 is QueryResponse.Success -> call.respond(HttpStatusCode.Created, result.wallet.balance)
                 is QueryResponse.DuplicateTransaction -> call.respond(
                     HttpStatusCode.Accepted,
@@ -54,7 +55,7 @@ fun Application.configureRouting() {
             val walletId =
                 call.parameters["id"] ?: return@get call.respond(HttpStatusCode.BadRequest, "No Wallet Id provided")
 
-            when (val result = doesWalletExist(walletId)) {
+            when (val result = doesWalletExist(UUID.fromString(walletId))) {
                 is QueryResponse.WalletNotFound -> call.respond(HttpStatusCode.NotFound)
                 is QueryResponse.Success -> call.respond(HttpStatusCode.OK, result.wallet.balance)
                 else -> {

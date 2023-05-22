@@ -11,7 +11,7 @@ import java.util.UUID
 class ApplicationTest {
     @Test
     fun `test Will Not Find Unknown Wallet`() {
-        val walletId = UUID.randomUUID().toString()
+        val walletId = UUID.randomUUID()
 
         when (val result = doesWalletExist(walletId)) {
             is QueryResponse.WalletNotFound -> {}
@@ -23,7 +23,7 @@ class ApplicationTest {
 
     @Test
     fun `test Will Credit And Create A New Wallet`() {
-        val walletId = UUID.randomUUID().toString()
+        val walletId = UUID.randomUUID()
 
         when (val result: QueryResponse = creditWallet(walletId, 100, "testID")) {
             is QueryResponse.Success -> {
@@ -39,7 +39,7 @@ class ApplicationTest {
 
     @Test
     fun `test Will Credit Account`() {
-        val walletId = UUID.randomUUID().toString()
+        val walletId = UUID.randomUUID()
 
         creditWallet(walletId, 1, "testID1")
         when (val result = creditWallet(walletId, 2, "testID2")) {
@@ -57,7 +57,7 @@ class ApplicationTest {
 
     @Test
     fun `test Will Credit One After Another`() {
-        val walletId = UUID.randomUUID().toString()
+        val walletId = UUID.randomUUID()
 
         creditWallet(walletId, 123, "testID123")
         creditWallet(walletId, 312, "testID312")
@@ -79,7 +79,7 @@ class ApplicationTest {
 
     @Test
     fun `test Will Check If Accepted Is Returned For Duplicate Credits`() {
-        val walletId = UUID.randomUUID().toString()
+        val walletId = UUID.randomUUID()
 
         creditWallet(walletId, 123, "testID123")
         when (val result = creditWallet(walletId, 123, "testID123")) {
@@ -96,7 +96,7 @@ class ApplicationTest {
 
     @Test
     fun `test Will Debit Successfully`() {
-        val walletId = UUID.randomUUID().toString()
+        val walletId = UUID.randomUUID()
 
         creditWallet(walletId, 1000, "testID123")
         when (val result = debitWallet(walletId, 100, "testID123")) {
@@ -113,7 +113,7 @@ class ApplicationTest {
 
     @Test
     fun `test Will Debit Successfully Multiple Times`() {
-        val walletId = UUID.randomUUID().toString()
+        val walletId = UUID.randomUUID()
 
         creditWallet(walletId, 1000, "testID1")
         debitWallet(walletId, 100, "testID2")
@@ -134,7 +134,7 @@ class ApplicationTest {
 
     @Test
     fun testWillDebitWithDuplicates() {
-        val walletId = UUID.randomUUID().toString()
+        val walletId = UUID.randomUUID()
 
         creditWallet(walletId, 1000, "testID1")
         debitWallet(walletId, 100, "testID2")
@@ -153,7 +153,7 @@ class ApplicationTest {
 
     @Test
     fun `test Will Debit Fail When Debiting More Than Balance`() {
-        val walletId = UUID.randomUUID().toString()
+        val walletId = UUID.randomUUID()
 
         creditWallet(walletId, 1000, "testID1")
         when (val result = debitWallet(walletId, 1001, "testID2")) {

@@ -3,15 +3,21 @@ package vgw.wallet
 import kotlinx.serialization.Serializable
 import vgw.Transaction
 import vgw.TransactionType
+import vgw.UUIDSerializer
 import vgw.transactions
+import java.util.UUID
 
 @Serializable
 data class Balance(var transactionId: String, var version: Int, var coins: Int)
 
 @Serializable
-data class Wallet(val id: String, var balance: Balance)
+data class Wallet(
+    @Serializable(with = UUIDSerializer::class)
+    val id: UUID,
+    var balance: Balance,
+)
 
-fun creditWallet(walletId: String, coins: Int, transactionId: String): QueryResponse {
+fun creditWallet(walletId: UUID, coins: Int, transactionId: String): QueryResponse {
     val wallet = getWallet(walletId)
 
     if (wallet == null) {
@@ -36,7 +42,7 @@ fun creditWallet(walletId: String, coins: Int, transactionId: String): QueryResp
     }
 }
 
-fun debitWallet(walletId: String, coins: Int, transactionId: String): QueryResponse {
+fun debitWallet(walletId: UUID, coins: Int, transactionId: String): QueryResponse {
     val wallet = getWallet(walletId)!!
 
     return if (wallet.balance.coins < coins) {
@@ -61,7 +67,7 @@ fun debitWallet(walletId: String, coins: Int, transactionId: String): QueryRespo
 }
 
 private fun addNewTransaction(
-    walletId: String,
+    walletId: UUID,
     transactionType: TransactionType,
     coins: Int,
     transactionId: String,
@@ -71,7 +77,7 @@ private fun addNewTransaction(
     transactions.add(newTransaction)
 }
 
-fun doesWalletExist(walletId: String): QueryResponse {
+fun doesWalletExist(walletId: UUID): QueryResponse {
     val wallet = getWallet(walletId)
 
     return if (wallet == null) {
@@ -81,21 +87,25 @@ fun doesWalletExist(walletId: String): QueryResponse {
     }
 }
 
-private fun getWallet(walletId: String): Wallet? {
+private fun getWallet(walletId: UUID): Wallet? {
     val transactionCheck = transactions.find { it.walletId == walletId }
     return if (transactionCheck == null) {
         null
     } else {
-        Wallet(walletId, Balance(getLatestTransactionId(walletId), getLastVersion(walletId), getWalletAmount(walletId)))
+        Wallet(
+            walletId,
+            Balance(getLatestTransactionId(walletId), getLastVersion(walletId), getWalletAmount(walletId))
+        )
     }
 }
 
-private fun getLatestTransactionId(walletId: String): String {
-    val highestVersionTransaction = transactions.filter { it.walletId == walletId }.maxByOrNull { it.version }
+private fun getLatestTransactionId(walletId: UUID): String {
+    val highestVersionTransaction =
+        transactions.filter { it.walletId == walletId }.maxByOrNull { it.version }
     return highestVersionTransaction?.id ?: "NA"
 }
 
-private fun getWalletAmount(walletID: String): Int {
+private fun getWalletAmount(walletID: UUID): Int {
     var amount = 0
 
     for (transaction in transactions.filter { it.walletId == walletID }) {
@@ -113,7 +123,8 @@ private fun getWalletAmount(walletID: String): Int {
     return amount
 }
 
-private fun getLastVersion(walletId: String): Int {
-    val highestVersionTransaction = transactions.filter { it.walletId == walletId }.maxByOrNull { it.version }
+private fun getLastVersion(walletId: UUID): Int {
+    val highestVersionTransaction =
+        transactions.filter { it.walletId == walletId }.maxByOrNull { it.version }
     return highestVersionTransaction?.version ?: 0
 }
