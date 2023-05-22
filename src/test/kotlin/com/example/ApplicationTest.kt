@@ -1,139 +1,165 @@
 package com.example
 
+import vgw.transactions
 import kotlin.test.*
 import vgw.wallet.*
+import java.util.UUID
 
 class ApplicationTest {
-
     @Test
-    fun testWillNotFindUnknownWallet() {
-        val walletID = "testWillNotFindUnknownWallet"
-
-        val result = getWallet(walletID)
-        assertNull(result)
-    }
-
-
-    @Test
-    fun testWillCreditAndCreateANewWallet() {
-        val walletID = "testWillCreditAndCreateANewWallet"
-
-        val result = creditWallet(walletID, 100, "testID")
-        assertEquals(WalletResponse.Created, result.response)
-        assertEquals(100, result.balance.coins)
-        assertEquals("testID", result.balance.transactionId)
-
-        val resultWallet = getWallet(walletID)
-        assertNotNull(resultWallet)
+    fun `test Will Not Find Unknown Wallet`() {
+        val walletId = UUID.randomUUID().toString()
+        when (val result = doesWalletExist(walletId)) {
+            is QueryResponse.WalletNotFound -> {}
+            else -> {
+                fail("Expected QueryResponse.WalletNotFOund but received: $result")
+            }
+        }
     }
 
     @Test
-    fun testWillCreditAccount() {
-        val walletID = "testWillCreditAccount"
+    fun `test Will Credit And Create A New Wallet`() {
+        val walletId = UUID.randomUUID().toString()
 
-        creditWallet(walletID, 1, "testID1")
-        creditWallet(walletID, 2, "testID2")
+        when (val result: QueryResponse = creditWallet(walletId, 100, "testID")) {
+            is QueryResponse.Success -> {
+                assertEquals(100, result.wallet.balance.coins)
+                assertEquals("testID", result.wallet.balance.transactionId)
+            }
 
-        val result = getWallet(walletID)
-        assertNotNull(result)
-
-        assertEquals(3, result.balance.coins)
-        assertEquals("testID2", result.balance.transactionId)
-        assertEquals(2, result.transactions.size)
+            else -> {
+                fail("Expected QueryResponse.Success but received: $result")
+            }
+        }
     }
 
     @Test
-    fun testWillCreditOneAfterAnother() {
-        val walletID = "testWillCreditOneAfterAnother"
+    fun `test Will Credit Account`() {
+        val walletId = UUID.randomUUID().toString()
 
-        creditWallet(walletID, 123, "testID123")
-        creditWallet(walletID, 312, "testID312")
-        creditWallet(walletID, 456, "testID456")
-        creditWallet(walletID, 654, "testID654")
-        creditWallet(walletID, 200, "test200")
+        creditWallet(walletId, 1, "testID1")
+        when (val result = creditWallet(walletId, 2, "testID2")) {
+            is QueryResponse.Success -> {
+                assertEquals(3, result.wallet.balance.coins)
+                assertEquals("testID2", result.wallet.balance.transactionId)
+                assertEquals(2, transactions.filter { it.walletId == walletId }.size)
+            }
 
-        val result = getWallet(walletID)
-        assertNotNull(result)
-
-        assertEquals(1745, result.balance.coins)
-        assertEquals("test200", result.balance.transactionId)
-        assertEquals(5, result.transactions.size)
+            else -> {
+                fail("Expected QueryResponse.Success but received: $result")
+            }
+        }
     }
 
     @Test
-    fun testWillCheckIfAcceptedIsReturnedForDuplicateCredits() {
-        val walletID = "testWillCheckIfAcceptedIsReturnedForDuplicateCredits"
+    fun `test Will Credit One After Another`() {
+        val walletId = UUID.randomUUID().toString()
 
-        creditWallet(walletID, 123, "testID123")
-        val result = creditWallet(walletID, 123, "testID123")
+        creditWallet(walletId, 123, "testID123")
+        creditWallet(walletId, 312, "testID312")
+        creditWallet(walletId, 456, "testID456")
+        creditWallet(walletId, 654, "testID654")
 
-        assertEquals(WalletResponse.DuplicateTransaction, result.response)
-        assertEquals(123, result.balance.coins)
-        assertEquals("testID123", result.balance.transactionId)
+        when (val result = creditWallet(walletId, 200, "test200")) {
+            is QueryResponse.Success -> {
+                assertEquals(1745, result.wallet.balance.coins)
+                assertEquals("test200", result.wallet.balance.transactionId)
+                assertEquals(5, transactions.filter { it.walletId == walletId }.size)
+            }
+
+            else -> {
+                fail("Expected QueryResponse.Success but received: $result")
+            }
+        }
+    }
+
+    @Test
+    fun `test Will Check If Accepted Is Returned For Duplicate Credits`() {
+        val walletId = UUID.randomUUID().toString()
+
+        creditWallet(walletId, 123, "testID123")
+        when (val result = creditWallet(walletId, 123, "testID123")) {
+            is QueryResponse.DuplicateTransaction -> {
+                assertEquals(123, result.wallet.balance.coins)
+                assertEquals("testID123", result.wallet.balance.transactionId)
+            }
+
+            else -> {
+                fail("Expected QueryResponse.Success but received: $result")
+            }
+        }
     }
 
     @Test
     fun testWillDebitSuccessfully() {
-        val walletID = "testWillDebitSuccessfully"
+        val walletId = UUID.randomUUID().toString()
 
-        creditWallet(walletID, 1000, "testID123")
-        debitWallet(walletID, 100, "testID123")
+        creditWallet(walletId, 1000, "testID123")
+        when (val result = debitWallet(walletId, 100, "testID123")) {
+            is QueryResponse.Success -> {
+                assertEquals(900, result.wallet.balance.coins)
+                assertEquals("testID123", result.wallet.balance.transactionId)
+            }
 
-        val result = getWallet(walletID)
-        assertNotNull(result)
-
-        assertEquals(900, result.balance.coins)
-        assertEquals("testID123", result.balance.transactionId)
+            else -> {
+                fail("Expected QueryResponse.Success but received: $result")
+            }
+        }
     }
 
     @Test
     fun testWillDebitSuccessfullyMultipleTimes() {
-        val walletID = "testWillDebitSuccessfullyMultipleTimes"
+        val walletId = UUID.randomUUID().toString()
 
-        creditWallet(walletID, 1000, "testID1")
-        debitWallet(walletID, 100, "testID2")
-        debitWallet(walletID, 100, "testID3")
-        debitWallet(walletID, 100, "testID4")
-        debitWallet(walletID, 100, "testID5")
+        creditWallet(walletId, 1000, "testID1")
+        debitWallet(walletId, 100, "testID2")
+        debitWallet(walletId, 100, "testID3")
+        debitWallet(walletId, 100, "testID4")
+        when (val result = debitWallet(walletId, 100, "testID5")) {
+            is QueryResponse.Success -> {
+                assertEquals(600, result.wallet.balance.coins)
+                assertEquals("testID5", result.wallet.balance.transactionId)
+                assertEquals(5, transactions.size)
+            }
 
-        val result = getWallet(walletID)
-        assertNotNull(result)
-
-        assertEquals(600, result.balance.coins)
-        assertEquals("testID5", result.balance.transactionId)
-        assertEquals(5, result.transactions.size)
+            else -> {
+                fail("Expected QueryResponse.Success but received: $result")
+            }
+        }
     }
 
     @Test
     fun testWillDebitWithDuplicates() {
-        val walletID = "testWillDebitWithDuplicates"
+        val walletId = UUID.randomUUID().toString()
 
-        creditWallet(walletID, 1000, "testID1")
-        debitWallet(walletID, 100, "testID2")
-        val responseResult = debitWallet(walletID, 100, "testID2")
-        assertEquals(WalletResponse.DuplicateTransaction, responseResult.response)
+        creditWallet(walletId, 1000, "testID1")
+        debitWallet(walletId, 100, "testID2")
+        when (val result = debitWallet(walletId, 100, "testID2")) {
+            is QueryResponse.DuplicateTransaction -> {
+                assertEquals(900, result.wallet.balance.coins)
+                assertEquals("testID2", result.wallet.balance.transactionId)
+                assertEquals(2, transactions.filter { it.walletId == walletId }.size)
+            }
 
-        val result = getWallet(walletID)
-        assertNotNull(result)
-
-        assertEquals(900, result.balance.coins)
-        assertEquals("testID2", result.balance.transactionId)
-        assertEquals(2, result.transactions.size)
+            else -> {
+                fail("Expected QueryResponse.Success but received: $result")
+            }
+        }
     }
 
     @Test
-    fun testWillDebitFailWhenDebitingMoreThanBalance() {
-        val walletID = "testWillDebitFailWhenDebitingMoreThanBalance"
+    fun `test Will Debit Fail When Debiting More Than Balance`() {
+        val walletId = UUID.randomUUID().toString()
 
-        creditWallet(walletID, 1000, "testID1")
-        val responseResult = debitWallet(walletID, 1001, "testID2")
-        assertEquals(WalletResponse.InputError, responseResult.response)
+        creditWallet(walletId, 1000, "testID1")
+        when (val result = debitWallet(walletId, 1001, "testID2")) {
+            is QueryResponse.InsufficientFunds -> {
+                assertEquals(1, transactions.filter { it.walletId == walletId }.size)
+            }
 
-        val result = getWallet(walletID)
-        assertNotNull(result)
-
-        assertEquals(1000, result.balance.coins)
-        assertEquals("testID1", result.balance.transactionId)
-        assertEquals(1, result.transactions.size)
+            else -> {
+                fail("Expected QueryResponse.Success but received: $result")
+            }
+        }
     }
 }

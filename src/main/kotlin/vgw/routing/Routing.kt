@@ -11,60 +11,55 @@ import vgw.wallet.payloads.CreditPayload
 fun Application.configureRouting() {
     routing {
         post("/wallets/{id}/credit") {
-            val id = call.parameters["id"]
-            if (id == null) {
-                call.respond(HttpStatusCode.BadRequest, "Invalid ID")
-            } else {
-                val jsonPayload = call.receive<CreditPayload>()
-                val result = creditWallet(id, jsonPayload.coins, jsonPayload.transactionId)
+            val walletId =
+                call.parameters["id"] ?: return@post call.respond(HttpStatusCode.BadRequest, "No Wallet Id provided")
 
-                when (result.response) {
-                    WalletResponse.NotFound -> call.respond(HttpStatusCode.NotFound)
-                    WalletResponse.DuplicateTransaction -> call.respond(HttpStatusCode.Accepted, result.balance)
-                    WalletResponse.Created -> call.respond(HttpStatusCode.Created, result.balance)
-                    WalletResponse.InputError -> call.respond(HttpStatusCode.BadRequest, result.balance)
-                    else -> {
-                        call.respond(HttpStatusCode.InternalServerError)
-                    }
+            val jsonPayload = call.receive<CreditPayload>()
+            when (val result = creditWallet(walletId, jsonPayload.coins, jsonPayload.transactionId)) {
+                is QueryResponse.Success -> call.respond(HttpStatusCode.Created, result.wallet.balance)
+                is QueryResponse.DuplicateTransaction -> call.respond(
+                    HttpStatusCode.Accepted,
+                    result.wallet.balance
+                )
+
+                else -> {
+                    call.respond(HttpStatusCode.InternalServerError)
                 }
             }
+
         }
 
         post("/wallets/{id}/debit") {
-            val id = call.parameters["id"]
-            if (id == null) {
-                call.respond(HttpStatusCode.BadRequest, "Invalid ID")
-            } else {
-                val jsonPayload = call.receive<CreditPayload>()
-                val result = debitWallet(id, jsonPayload.coins, jsonPayload.transactionId)
+            val walletId =
+                call.parameters["id"] ?: return@post call.respond(HttpStatusCode.BadRequest, "No Wallet Id provided")
 
-                when (result.response) {
-                    WalletResponse.NotFound -> call.respond(HttpStatusCode.NotFound)
-                    WalletResponse.DuplicateTransaction -> call.respond(HttpStatusCode.Accepted, result.balance)
-                    WalletResponse.Created -> call.respond(HttpStatusCode.Created, result.balance)
-                    WalletResponse.InputError -> call.respond(HttpStatusCode.BadRequest, result.balance)
-                    else -> {
-                        call.respond(HttpStatusCode.InternalServerError)
-                    }
+            val jsonPayload = call.receive<CreditPayload>()
+            when (val result = debitWallet(walletId, jsonPayload.coins, jsonPayload.transactionId)) {
+                is QueryResponse.Success -> call.respond(HttpStatusCode.Created, result.wallet.balance)
+                is QueryResponse.DuplicateTransaction -> call.respond(
+                    HttpStatusCode.Accepted,
+                    result.wallet.balance
+                )
+
+                is QueryResponse.InsufficientFunds -> call.respond(HttpStatusCode.BadRequest, result.msg)
+                else -> {
+                    call.respond(HttpStatusCode.InternalServerError)
                 }
+
             }
         }
 
         get("/wallets/{id}") {
-            val id = call.parameters["id"]
-            if (id == null) {
-                call.respond(HttpStatusCode.BadRequest, "Invalid ID")
-            } else {
-                val result = getWalletBalance(id)
-
-                when (result.response) {
-                    WalletResponse.NotFound -> call.respond(HttpStatusCode.NotFound)
-                    WalletResponse.Ok -> call.respond(HttpStatusCode.OK, result.balance)
-                    else -> {
-                        call.respond(HttpStatusCode.InternalServerError)
-                    }
+            val walletId =
+                call.parameters["id"] ?: return@get call.respond(HttpStatusCode.BadRequest, "No Wallet Id provided")
+            when (val result = doesWalletExist(walletId)) {
+                is QueryResponse.WalletNotFound -> call.respond(HttpStatusCode.NotFound)
+                is QueryResponse.Success -> call.respond(HttpStatusCode.OK, result.wallet.balance)
+                else -> {
+                    call.respond(HttpStatusCode.InternalServerError)
                 }
             }
+
         }
     }
 }
