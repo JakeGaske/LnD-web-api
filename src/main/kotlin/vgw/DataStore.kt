@@ -9,7 +9,7 @@ val transactions = mutableListOf<Transaction>()
 data class Transaction(
     val walletId: String,
     val type: TransactionType,
-    val coins: Int,
+    val amount: Int,
     val id: String,
     val version: Int,
 )

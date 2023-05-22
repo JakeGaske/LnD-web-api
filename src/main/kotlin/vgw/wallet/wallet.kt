@@ -103,11 +103,11 @@ private fun getWalletAmount(walletID: String): Int {
     for (transaction in transactions.filter { it.walletId == walletID }) {
         when (transaction.type) {
             TransactionType.Credit -> {
-                amount += transaction.coins
+                amount += transaction.amount
             }
 
             TransactionType.Debit -> {
-                amount -= transaction.coins
+                amount -= transaction.amount
             }
         }
     }

@@ -3,7 +3,7 @@ package vgw.wallet.payloads
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class CreditPayload(
+data class TransactionPayload(
     val transactionId: String,
-    val coins: Int
+    val coins: Int,
 )

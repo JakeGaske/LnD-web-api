@@ -2,10 +2,14 @@ package com.example
 
 import vgw.transactions
 import kotlin.test.*
-import vgw.wallet.*
+import vgw.wallet.QueryResponse
+import vgw.wallet.creditWallet
+import vgw.wallet.debitWallet
+import vgw.wallet.doesWalletExist
 import java.util.UUID
 
 class ApplicationTest {
+
     @Test
     fun `test Will Not Find Unknown Wallet`() {
         val walletId = UUID.randomUUID().toString()
@@ -119,7 +123,7 @@ class ApplicationTest {
             is QueryResponse.Success -> {
                 assertEquals(600, result.wallet.balance.coins)
                 assertEquals("testID5", result.wallet.balance.transactionId)
-                assertEquals(5, transactions.size)
+                assertEquals(5, transactions.filter { it.walletId == walletId }.size)
             }
 
             else -> {
