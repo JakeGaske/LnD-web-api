@@ -91,7 +91,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun testWillDebitSuccessfully() {
+    fun `test Will Debit Successfully`() {
         val walletId = UUID.randomUUID().toString()
 
         creditWallet(walletId, 1000, "testID123")
@@ -108,7 +108,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun testWillDebitSuccessfullyMultipleTimes() {
+    fun `test Will Debit Successfully Multiple Times`() {
         val walletId = UUID.randomUUID().toString()
 
         creditWallet(walletId, 1000, "testID1")
