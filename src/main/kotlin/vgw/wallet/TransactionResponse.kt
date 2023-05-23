@@ -2,7 +2,10 @@ package vgw.wallet
 
 sealed interface QueryResponse {
     data class Success(val wallet: Wallet) : QueryResponse
-    data class WalletNotFound(val msg: String = "Wallet Not Found") : QueryResponse
-    data class InsufficientFunds(val msg: String = "Not Enough Funds") : QueryResponse
-    data class DuplicateTransaction(val wallet: Wallet) : QueryResponse
+
+    sealed interface Error : QueryResponse {
+        data class WalletNotFound(val msg: String = "Wallet Not Found") : Error
+        data class InsufficientFunds(val msg: String = "Not Enough Funds") : Error
+        data class DuplicateTransaction(val wallet: Wallet) : Error
+    }
 }

@@ -20,6 +20,7 @@ data class Transaction(
     val amount: Int,
     val id: String,
     val version: Int,
+    val balance: Int,
 )
 
 enum class TransactionType {
