@@ -7,17 +7,17 @@ import vgw.UUIDSerializer
 import vgw.transactions
 import java.util.UUID
 
-@Serializable
-data class Balance(var transactionId: String, var version: Int, var coins: Int)
-
-@Serializable
-data class Wallet(
-    @Serializable(with = UUIDSerializer::class)
-    val id: UUID,
-    var balance: Balance,
-)
-
 class WalletManager {
+    @Serializable
+    data class Wallet(
+        @Serializable(with = UUIDSerializer::class)
+        val id: UUID,
+        var balance: Balance,
+    )
+
+    @Serializable
+    data class Balance(var transactionId: String, var version: Int, var coins: Int)
+
     fun creditWallet(walletId: UUID, amount: Int, transactionId: String): QueryResponse {
         val wallet = getWallet(walletId)
 

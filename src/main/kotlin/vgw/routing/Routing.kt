@@ -5,7 +5,9 @@ import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import vgw.wallet.*
+import vgw.wallet.QueryResponse
+import vgw.wallet.WalletManager
+import vgw.wallet.doesWalletExist
 import vgw.wallet.payloads.TransactionPayload
 import java.util.*
 
