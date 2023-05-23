@@ -13,57 +13,63 @@ fun Application.configureRouting() {
     val walletManager = WalletManager()
 
     routing {
-        post("/wallets/{id}/credit") {
-            val walletId =
-                call.parameters["id"] ?: return@post call.respond(HttpStatusCode.BadRequest, "No Wallet Id provided")
-            val payload = call.receive<TransactionPayload>()
+        route("/wallets/{id}") {
+            post("/credit") {
+                val walletId =
+                    call.parameters["id"] ?: return@post call.respond(
+                        HttpStatusCode.BadRequest,
+                        "No Wallet Id provided"
+                    )
+                val payload = call.receive<TransactionPayload>()
 
-            when (val result =
-                walletManager.creditWallet(UUID.fromString(walletId), payload.coins, payload.transactionId)) {
-                is QueryResponse.Success -> call.respond(HttpStatusCode.Created, result.wallet.balance)
-                is QueryResponse.Error.DuplicateTransaction -> call.respond(
-                    HttpStatusCode.Accepted,
-                    result.wallet.balance
-                )
+                when (val result =
+                    walletManager.creditWallet(UUID.fromString(walletId), payload.coins, payload.transactionId)) {
+                    is QueryResponse.Success -> call.respond(HttpStatusCode.Created, result.wallet.balance)
+                    is QueryResponse.Error.DuplicateTransaction -> call.respond(
+                        HttpStatusCode.Accepted,
+                        result.wallet.balance
+                    )
 
-                else -> {
-                    call.respond(HttpStatusCode.InternalServerError)
+                    else -> {
+                        call.respond(HttpStatusCode.InternalServerError)
+                    }
                 }
             }
-        }
+            post("/debit") {
+                val walletId =
+                    call.parameters["id"] ?: return@post call.respond(
+                        HttpStatusCode.BadRequest,
+                        "No Wallet Id provided"
+                    )
+                val payload = call.receive<TransactionPayload>()
 
-        post("/wallets/{id}/debit") {
-            val walletId =
-                call.parameters["id"] ?: return@post call.respond(HttpStatusCode.BadRequest, "No Wallet Id provided")
-            val payload = call.receive<TransactionPayload>()
+                when (val result =
+                    walletManager.debitWallet(UUID.fromString(walletId), payload.coins, payload.transactionId)) {
+                    is QueryResponse.Success -> call.respond(HttpStatusCode.Created, result.wallet.balance)
+                    is QueryResponse.Error.DuplicateTransaction -> call.respond(
+                        HttpStatusCode.Accepted,
+                        result.wallet.balance
+                    )
 
-            when (val result =
-                walletManager.debitWallet(UUID.fromString(walletId), payload.coins, payload.transactionId)) {
-                is QueryResponse.Success -> call.respond(HttpStatusCode.Created, result.wallet.balance)
-                is QueryResponse.Error.DuplicateTransaction -> call.respond(
-                    HttpStatusCode.Accepted,
-                    result.wallet.balance
-                )
-
-                is QueryResponse.Error.InsufficientFunds -> call.respond(HttpStatusCode.BadRequest, result.msg)
-                else -> {
-                    call.respond(HttpStatusCode.InternalServerError)
+                    is QueryResponse.Error.InsufficientFunds -> call.respond(HttpStatusCode.BadRequest, result.msg)
+                    else -> {
+                        call.respond(HttpStatusCode.InternalServerError)
+                    }
                 }
             }
-        }
+            get {
+                val walletId =
+                    call.parameters["id"] ?: return@get call.respond(
+                        HttpStatusCode.BadRequest,
+                        "No Wallet Id provided"
+                    )
 
-        get("/wallets/{id}") {
-            val walletId =
-                call.parameters["id"] ?: return@get call.respond(
-                    HttpStatusCode.BadRequest,
-                    "No Wallet Id provided"
-                )
-
-            when (val result = doesWalletExist(UUID.fromString(walletId))) {
-                is QueryResponse.Success -> call.respond(HttpStatusCode.OK, result.wallet.balance)
-                is QueryResponse.Error.WalletNotFound -> call.respond(HttpStatusCode.NotFound)
-                else -> {
-                    call.respond(HttpStatusCode.InternalServerError)
+                when (val result = doesWalletExist(UUID.fromString(walletId))) {
+                    is QueryResponse.Success -> call.respond(HttpStatusCode.OK, result.wallet.balance)
+                    is QueryResponse.Error.WalletNotFound -> call.respond(HttpStatusCode.NotFound)
+                    else -> {
+                        call.respond(HttpStatusCode.InternalServerError)
+                    }
                 }
             }
         }
