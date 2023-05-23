@@ -1,14 +1,10 @@
-package vgw.routing
+package co.vgw.lnd.wallet.app
 
 import io.ktor.server.application.*
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import vgw.wallet.QueryResponse
-import vgw.wallet.WalletManager
-import vgw.wallet.doesWalletExist
-import vgw.wallet.payloads.TransactionPayload
 import java.util.*
 
 fun Application.configureRouting() {

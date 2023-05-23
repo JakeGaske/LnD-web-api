@@ -1,7 +1,9 @@
 package com.example
 
-import vgw.transactions
-import vgw.wallet.*
+import co.vgw.lnd.wallet.app.QueryResponse
+import co.vgw.lnd.wallet.app.WalletManager
+import co.vgw.lnd.wallet.app.doesWalletExist
+import co.vgw.lnd.wallet.app.transactions
 import kotlin.test.*
 import java.util.UUID
 

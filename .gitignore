@@ -26,3 +26,5 @@ replay_pid*
 
 build/
 .gradle
+# Ignore Gradle build output directory
+build

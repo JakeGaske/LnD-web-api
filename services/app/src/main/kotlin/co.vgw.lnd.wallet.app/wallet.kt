@@ -1,10 +1,6 @@
-package vgw.wallet
+package co.vgw.lnd.wallet.app
 
 import kotlinx.serialization.Serializable
-import vgw.Transaction
-import vgw.TransactionType
-import vgw.UUIDSerializer
-import vgw.transactions
 import java.util.UUID
 
 class WalletManager {

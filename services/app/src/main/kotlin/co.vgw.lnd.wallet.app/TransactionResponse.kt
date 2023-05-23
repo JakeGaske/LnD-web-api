@@ -1,4 +1,4 @@
-package vgw.wallet
+package co.vgw.lnd.wallet.app
 
 sealed interface QueryResponse {
     data class Success(val wallet: WalletManager.Wallet) : QueryResponse
