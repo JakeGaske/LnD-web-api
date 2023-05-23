@@ -22,10 +22,10 @@ fun Application.configureRouting() {
 
                 when (val result =
                     walletManager.creditWallet(UUID.fromString(walletId), payload.coins, payload.transactionId)) {
-                    is QueryResponse.Success -> call.respond(HttpStatusCode.Created, result.wallet.balance)
+                    is QueryResponse.Success -> call.respond(HttpStatusCode.Created, result)
                     is QueryResponse.Error.DuplicateTransaction -> call.respond(
                         HttpStatusCode.Accepted,
-                        result.wallet.balance
+                        result
                     )
 
                     else -> {
@@ -43,10 +43,10 @@ fun Application.configureRouting() {
 
                 when (val result =
                     walletManager.debitWallet(UUID.fromString(walletId), payload.coins, payload.transactionId)) {
-                    is QueryResponse.Success -> call.respond(HttpStatusCode.Created, result.wallet.balance)
+                    is QueryResponse.Success -> call.respond(HttpStatusCode.Created, result)
                     is QueryResponse.Error.DuplicateTransaction -> call.respond(
                         HttpStatusCode.Accepted,
-                        result.wallet.balance
+                        result
                     )
 
                     is QueryResponse.Error.InsufficientFunds -> call.respond(HttpStatusCode.BadRequest, result.msg)
@@ -62,8 +62,8 @@ fun Application.configureRouting() {
                         "No Wallet Id provided"
                     )
 
-                when (val result = doesWalletExist(UUID.fromString(walletId))) {
-                    is QueryResponse.Success -> call.respond(HttpStatusCode.OK, result.wallet.balance)
+                when (val result = walletManager.doesWalletExist(UUID.fromString(walletId))) {
+                    is QueryResponse.Success -> call.respond(HttpStatusCode.OK, result)
                     is QueryResponse.Error.WalletNotFound -> call.respond(HttpStatusCode.NotFound)
                     else -> {
                         call.respond(HttpStatusCode.InternalServerError)

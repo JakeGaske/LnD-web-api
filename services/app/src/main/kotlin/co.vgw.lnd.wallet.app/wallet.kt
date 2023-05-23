@@ -5,69 +5,61 @@ import java.util.UUID
 
 class WalletManager {
     @Serializable
-    data class Wallet(
-        @Serializable(with = UUIDSerializer::class)
-        val id: UUID,
-        var balance: Balance,
-    )
-
-    @Serializable
     data class Balance(var transactionId: String, var version: Int, var coins: Int)
 
     fun creditWallet(walletId: UUID, amount: Int, transactionId: String): QueryResponse {
-        val wallet = getWallet(walletId)
+        val balance = getBalance(walletId)
 
-        if (wallet == null) {
-            val newWallet = Wallet(walletId, Balance(transactionId, 1, amount))
+        if (balance == null) {
             addNewTransaction(
                 walletId,
                 TransactionType.Credit,
                 amount,
                 transactionId,
-                newWallet.balance.version,
+                0,
                 amount
             )
-            return QueryResponse.Success(newWallet)
+            return QueryResponse.Success(getBalance(walletId)!!)
         } else {
             val isDuplicateTransaction: Boolean =
                 transactions.any { it.id == transactionId && it.type == TransactionType.Credit && it.walletId == walletId }
             return if (isDuplicateTransaction) {
-                QueryResponse.Error.DuplicateTransaction(getWallet(walletId)!!)
+                QueryResponse.Error.DuplicateTransaction(getBalance(walletId)!!)
             } else {
                 addNewTransaction(
                     walletId,
                     TransactionType.Credit,
                     amount,
                     transactionId,
-                    wallet.balance.version + 1,
-                    wallet.balance.coins + amount
+                    balance.version + 1,
+                    balance.coins + amount
                 )
-                QueryResponse.Success(getWallet(walletId)!!)
+                QueryResponse.Success(getBalance(walletId)!!)
             }
         }
     }
 
     fun debitWallet(walletId: UUID, amount: Int, transactionId: String): QueryResponse {
-        val wallet = getWallet(walletId)!!
+        val balance = getBalance(walletId)!!
 
-        return if (wallet.balance.coins < amount) {
+        return if (balance.coins < amount) {
             QueryResponse.Error.InsufficientFunds()
         } else {
             val isDuplicateTransaction: Boolean =
                 transactions.any { it.id == transactionId && it.type == TransactionType.Debit && it.walletId == walletId }
 
             if (isDuplicateTransaction) {
-                QueryResponse.Error.DuplicateTransaction(wallet)
+                QueryResponse.Error.DuplicateTransaction(balance)
             } else {
                 addNewTransaction(
                     walletId,
                     TransactionType.Debit,
                     amount,
                     transactionId,
-                    wallet.balance.version + 1,
-                    wallet.balance.coins - amount
+                    balance.version + 1,
+                    balance.coins - amount
                 )
-                QueryResponse.Success(getWallet(walletId)!!)
+                QueryResponse.Success(getBalance(walletId)!!)
             }
         }
     }
@@ -84,7 +76,7 @@ class WalletManager {
         transactions.add(newTransaction)
     }
 
-    fun getWallet(walletId: UUID): Wallet? {
+    private fun getBalance(walletId: UUID): Balance? {
         val transactionCheck = transactions.find { it.walletId == walletId }
         return if (transactionCheck == null) {
             null
@@ -94,10 +86,7 @@ class WalletManager {
             if (lastTransaction == null) {
                 null
             } else {
-                Wallet(
-                    walletId,
-                    Balance(lastTransaction.id, lastTransaction.version, lastTransaction.balance)
-                )
+                Balance(lastTransaction.id, lastTransaction.version, lastTransaction.balance)
             }
         }
     }
@@ -105,16 +94,15 @@ class WalletManager {
     private fun getLatestTransaction(walletId: UUID): Transaction? {
         return transactions.filter { it.walletId == walletId }.maxByOrNull { it.version }
     }
-}
 
-fun doesWalletExist(walletId: UUID): QueryResponse {
-    val walletManager = WalletManager()
-    val wallet = walletManager.getWallet(walletId)
+    fun doesWalletExist(walletId: UUID): QueryResponse {
+        val wallet = getBalance(walletId)
 
-    return if (wallet == null) {
-        QueryResponse.Error.WalletNotFound()
-    } else {
-        QueryResponse.Success(wallet)
+        return if (wallet == null) {
+            QueryResponse.Error.WalletNotFound()
+        } else {
+            QueryResponse.Success(wallet)
+        }
     }
 }
 

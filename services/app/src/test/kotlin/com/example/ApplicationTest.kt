@@ -2,7 +2,6 @@ package com.example
 
 import co.vgw.lnd.wallet.app.QueryResponse
 import co.vgw.lnd.wallet.app.WalletManager
-import co.vgw.lnd.wallet.app.doesWalletExist
 import co.vgw.lnd.wallet.app.transactions
 import kotlin.test.*
 import java.util.UUID
@@ -14,7 +13,7 @@ class ApplicationTest {
     fun `test Will Not Find Unknown Wallet`() {
         val walletId = UUID.randomUUID()
 
-        when (val result = doesWalletExist(walletId)) {
+        when (val result = walletManager.doesWalletExist(walletId)) {
             is QueryResponse.Error.WalletNotFound -> {}
             else -> {
                 fail("Expected QueryResponse.WalletNotFound but received: $result")
@@ -28,8 +27,8 @@ class ApplicationTest {
 
         when (val result: QueryResponse = walletManager.creditWallet(walletId, 100, "testID")) {
             is QueryResponse.Success -> {
-                assertEquals(100, result.wallet.balance.coins)
-                assertEquals("testID", result.wallet.balance.transactionId)
+                assertEquals(100, result.balance.coins)
+                assertEquals("testID", result.balance.transactionId)
             }
 
             else -> {
@@ -45,8 +44,8 @@ class ApplicationTest {
         walletManager.creditWallet(walletId, 1, "testID1")
         when (val result = walletManager.creditWallet(walletId, 2, "testID2")) {
             is QueryResponse.Success -> {
-                assertEquals(3, result.wallet.balance.coins)
-                assertEquals("testID2", result.wallet.balance.transactionId)
+                assertEquals(3, result.balance.coins)
+                assertEquals("testID2", result.balance.transactionId)
                 assertEquals(2, transactions.filter { it.walletId == walletId }.size)
             }
 
@@ -67,8 +66,8 @@ class ApplicationTest {
 
         when (val result = walletManager.creditWallet(walletId, 200, "test200")) {
             is QueryResponse.Success -> {
-                assertEquals(1745, result.wallet.balance.coins)
-                assertEquals("test200", result.wallet.balance.transactionId)
+                assertEquals(1745, result.balance.coins)
+                assertEquals("test200", result.balance.transactionId)
                 assertEquals(5, transactions.filter { it.walletId == walletId }.size)
             }
 
@@ -85,8 +84,8 @@ class ApplicationTest {
         walletManager.creditWallet(walletId, 123, "testID123")
         when (val result = walletManager.creditWallet(walletId, 123, "testID123")) {
             is QueryResponse.Error.DuplicateTransaction -> {
-                assertEquals(123, result.wallet.balance.coins)
-                assertEquals("testID123", result.wallet.balance.transactionId)
+                assertEquals(123, result.balance.coins)
+                assertEquals("testID123", result.balance.transactionId)
             }
 
             else -> {
@@ -102,8 +101,8 @@ class ApplicationTest {
         walletManager.creditWallet(walletId, 1000, "testID123")
         when (val result = walletManager.debitWallet(walletId, 100, "testID123")) {
             is QueryResponse.Success -> {
-                assertEquals(900, result.wallet.balance.coins)
-                assertEquals("testID123", result.wallet.balance.transactionId)
+                assertEquals(900, result.balance.coins)
+                assertEquals("testID123", result.balance.transactionId)
             }
 
             else -> {
@@ -122,8 +121,8 @@ class ApplicationTest {
         walletManager.debitWallet(walletId, 100, "testID4")
         when (val result = walletManager.debitWallet(walletId, 100, "testID5")) {
             is QueryResponse.Success -> {
-                assertEquals(600, result.wallet.balance.coins)
-                assertEquals("testID5", result.wallet.balance.transactionId)
+                assertEquals(600, result.balance.coins)
+                assertEquals("testID5", result.balance.transactionId)
                 assertEquals(5, transactions.filter { it.walletId == walletId }.size)
             }
 
@@ -141,8 +140,8 @@ class ApplicationTest {
         walletManager.debitWallet(walletId, 100, "testID2")
         when (val result = walletManager.debitWallet(walletId, 100, "testID2")) {
             is QueryResponse.Error.DuplicateTransaction -> {
-                assertEquals(900, result.wallet.balance.coins)
-                assertEquals("testID2", result.wallet.balance.transactionId)
+                assertEquals(900, result.balance.coins)
+                assertEquals("testID2", result.balance.transactionId)
                 assertEquals(2, transactions.filter { it.walletId == walletId }.size)
             }
 
