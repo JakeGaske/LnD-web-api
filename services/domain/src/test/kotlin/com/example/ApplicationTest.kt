@@ -1,8 +1,8 @@
 package com.example
 
-import co.vgw.lnd.wallet.app.QueryResponse
-import co.vgw.lnd.wallet.app.WalletManager
-import co.vgw.lnd.wallet.app.transactions
+import co.vgw.lnd.wallet.domain.QueryResponse
+import co.vgw.lnd.wallet.domain.WalletManager
+import co.vgw.lnd.wallet.domain.transactions
 import kotlin.test.*
 import java.util.UUID
 

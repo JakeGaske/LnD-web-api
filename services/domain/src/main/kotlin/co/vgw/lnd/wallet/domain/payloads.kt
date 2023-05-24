@@ -1,4 +1,4 @@
-package co.vgw.lnd.wallet.app
+package co.vgw.lnd.wallet.domain
 
 import kotlinx.serialization.Serializable
 

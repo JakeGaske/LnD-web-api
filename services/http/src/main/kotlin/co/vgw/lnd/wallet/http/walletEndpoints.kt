@@ -1,5 +1,8 @@
-package co.vgw.lnd.wallet.app
+package co.vgw.lnd.http
 
+import co.vgw.lnd.wallet.domain.QueryResponse
+import co.vgw.lnd.wallet.domain.TransactionPayload
+import co.vgw.lnd.wallet.domain.WalletManager
 import io.ktor.server.application.*
 import io.ktor.http.*
 import io.ktor.server.request.*

@@ -1,2 +1,4 @@
-rootProject.name = "com.example.lnd-web-example"
+rootProject.name = "services"
 include(":app")
+include(":http")
+include(":domain")
