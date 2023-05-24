@@ -1,7 +1,6 @@
 package co.vgw.lnd.wallet.http
 
 import co.vgw.lnd.wallet.domain.QueryResponse
-import co.vgw.lnd.wallet.domain.TransactionPayload
 import co.vgw.lnd.wallet.domain.WalletManager
 import io.ktor.server.application.*
 import io.ktor.http.*
@@ -16,19 +15,23 @@ fun Application.configureRouting() {
     routing {
         route("/wallets/{id}") {
             post("/credit") {
+                println("Run Credit")
                 val walletId =
                     call.parameters["id"] ?: return@post call.respond(
                         HttpStatusCode.BadRequest,
                         "No Wallet Id provided"
                     )
+                println("Was a valid ID")
                 val payload = call.receive<TransactionPayload>()
+
+                println("Payload :$payload")
 
                 when (val result =
                     walletManager.creditWallet(UUID.fromString(walletId), payload.coins, payload.transactionId)) {
-                    is QueryResponse.Success -> call.respond(HttpStatusCode.Created, result)
+                    is QueryResponse.Success -> call.respond(HttpStatusCode.Created, BalanceResponse(result.balance.transactionId,result.balance.version,result.balance.coins))
                     is QueryResponse.Error.DuplicateTransaction -> call.respond(
                         HttpStatusCode.Accepted,
-                        result
+                        BalanceResponse(result.balance.transactionId,result.balance.version,result.balance.coins)
                     )
 
                     else -> {
@@ -46,10 +49,10 @@ fun Application.configureRouting() {
 
                 when (val result =
                     walletManager.debitWallet(UUID.fromString(walletId), payload.coins, payload.transactionId)) {
-                    is QueryResponse.Success -> call.respond(HttpStatusCode.Created, result)
+                    is QueryResponse.Success -> call.respond(HttpStatusCode.Created, BalanceResponse(result.balance.transactionId,result.balance.version,result.balance.coins))
                     is QueryResponse.Error.DuplicateTransaction -> call.respond(
                         HttpStatusCode.Accepted,
-                        result
+                        BalanceResponse(result.balance.transactionId,result.balance.version,result.balance.coins)
                     )
 
                     is QueryResponse.Error.InsufficientFunds -> call.respond(HttpStatusCode.BadRequest, result.msg)
@@ -66,7 +69,7 @@ fun Application.configureRouting() {
                     )
 
                 when (val result = walletManager.doesWalletExist(UUID.fromString(walletId))) {
-                    is QueryResponse.Success -> call.respond(HttpStatusCode.OK, result)
+                    is QueryResponse.Success -> call.respond(HttpStatusCode.OK, BalanceResponse(result.balance.transactionId,result.balance.version,result.balance.coins))
                     is QueryResponse.Error.WalletNotFound -> call.respond(HttpStatusCode.NotFound)
                     else -> {
                         call.respond(HttpStatusCode.InternalServerError)

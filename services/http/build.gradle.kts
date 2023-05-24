@@ -1,12 +1,10 @@
-dependencies {
-    implementation(project(":domain"))
-    implementation(libs.bundles.ktor.server.app)
-}
-
 plugins {
     standardKotlinJvmModule()
+    alias(libs.plugins.kotlin.serialization)
 }
 
-repositories {
-    mavenCentral()
+dependencies {
+    implementation(project(":domain"))
+    implementation(libs.ktor.server.core)
+    implementation(libs.ktor.serialization.kotlinx.json)
 }

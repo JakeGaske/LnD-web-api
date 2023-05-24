@@ -1,10 +1,9 @@
 package co.vgw.lnd.wallet.domain
 
-import kotlinx.serialization.Serializable
 import java.util.UUID
 
 class WalletManager {
-    @Serializable
+
     data class Balance(var transactionId: String, var version: Int, var coins: Int)
 
     fun creditWallet(walletId: UUID, amount: Int, transactionId: String): QueryResponse {
@@ -16,7 +15,7 @@ class WalletManager {
                 TransactionType.Credit,
                 amount,
                 transactionId,
-                0,
+                1,
                 amount
             )
             return QueryResponse.Success(getBalance(walletId)!!)

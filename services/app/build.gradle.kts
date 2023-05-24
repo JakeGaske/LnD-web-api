@@ -10,6 +10,7 @@ application {
 dependencies {
     implementation(project(":http"))
     implementation(libs.bundles.ktor.server.app)
+    implementation(libs.slf4j)
 }
 
 tasks.distTar {
