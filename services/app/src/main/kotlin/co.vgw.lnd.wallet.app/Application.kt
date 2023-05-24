@@ -5,7 +5,7 @@ import io.ktor.server.engine.*
 import io.ktor.server.jetty.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.plugins.contentnegotiation.*
-import co.vgw.lnd.http.configureRouting
+import co.vgw.lnd.wallet.http.configureRouting
 import kotlinx.serialization.json.Json
 
 fun main() {

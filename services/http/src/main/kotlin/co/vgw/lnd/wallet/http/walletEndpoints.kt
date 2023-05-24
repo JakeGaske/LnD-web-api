@@ -1,4 +1,4 @@
-package co.vgw.lnd.http
+package co.vgw.lnd.wallet.http
 
 import co.vgw.lnd.wallet.domain.QueryResponse
 import co.vgw.lnd.wallet.domain.TransactionPayload
@@ -32,7 +32,7 @@ fun Application.configureRouting() {
                     )
 
                     else -> {
-                        call.respond(HttpStatusCode.InternalServerError)
+                        call.respond(HttpStatusCode.InternalServerError, "Unknown Variable")
                     }
                 }
             }

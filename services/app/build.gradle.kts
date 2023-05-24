@@ -9,10 +9,7 @@ application {
 
 dependencies {
     implementation(project(":http"))
-    implementation(libs.ktor.server.core)
-    implementation(libs.ktor.server.jetty)
-    implementation(libs.ktor.serialization.kotlinx.json)
-    implementation(libs.ktor.server.contentNegotiation)
+    implementation(libs.bundles.ktor.server.app)
 }
 
 tasks.distTar {
