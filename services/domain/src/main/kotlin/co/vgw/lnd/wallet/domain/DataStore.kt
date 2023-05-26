@@ -12,7 +12,6 @@ import java.util.UUID
 // Off load this to a database when task up to task
 val transactions = mutableListOf<Transaction>()
 
-@Serializable
 data class Transaction(
     @Serializable(with = UUIDSerializer::class)
     val walletId: UUID,
