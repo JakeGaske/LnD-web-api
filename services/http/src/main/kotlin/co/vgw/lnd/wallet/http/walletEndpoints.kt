@@ -15,16 +15,12 @@ fun Application.configureRouting() {
     routing {
         route("/wallets/{id}") {
             post("/credit") {
-                println("Run Credit")
                 val walletId =
                     call.parameters["id"] ?: return@post call.respond(
                         HttpStatusCode.BadRequest,
                         "No Wallet Id provided"
                     )
-                println("Was a valid ID")
                 val payload = call.receive<TransactionPayload>()
-
-                println("Payload :$payload")
 
                 when (val result =
                     walletManager.creditWallet(UUID.fromString(walletId), payload.coins, payload.transactionId)) {
